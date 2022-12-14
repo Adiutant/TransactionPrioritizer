@@ -43,7 +43,7 @@ func (tx Transactions) Less(i, j int) bool {
 	if err != nil {
 		return false
 	}
-	return firstAmount/float64(tx.latencies[tx.txList[i].BankCountryCode]) > secondAmount/float64(tx.latencies[tx.txList[j].BankCountryCode])
+	return firstAmount/float64(tx.latencies[tx.txList[i].BankCountryCode]) < secondAmount/float64(tx.latencies[tx.txList[j].BankCountryCode])
 }
 
 type FraudDetectionResult struct {
