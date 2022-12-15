@@ -2,9 +2,11 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"sort"
 	"strconv"
+	"time"
 )
 
 type Interface interface {
@@ -57,7 +59,7 @@ func (tx Transactions) Swap(i, j int) {
 
 type FraudDetectionResults []FraudDetectionResult
 
-func sum(array []Transaction) float64 {
+func Sum(array []Transaction) float64 {
 	result := float64(0)
 	for _, v := range array {
 		amountVal, _ := strconv.ParseFloat(v.Amount, 32)
@@ -65,7 +67,7 @@ func sum(array []Transaction) float64 {
 	}
 	return result
 }
-func Prioritize(tx []Transaction) ([]Transaction, error) {
+func Prioritize(tx []Transaction, totalTime time.Duration) ([]Transaction, error) {
 	jsonBytes, err := ioutil.ReadFile("data/api_latencies.json")
 	if err != nil {
 		return nil, err
@@ -79,10 +81,14 @@ func Prioritize(tx []Transaction) ([]Transaction, error) {
 	sort.Sort(transactions)
 	time := 0
 	resultSlice := make([]Transaction, 0)
-	for i := len(transactions.txList) - 1; i >= 0 && time < 1000; i-- {
+	for i := len(transactions.txList) - 1; i >= 0; i-- {
+		if int64(time+transactions.latencies[transactions.txList[i].BankCountryCode]) > totalTime.Milliseconds() {
+			break
+		}
 		time += transactions.latencies[transactions.txList[i].BankCountryCode]
 		resultSlice = append(resultSlice, transactions.txList[i])
 	}
+	fmt.Println(time)
 	return resultSlice, nil
 
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"testTaskSec/model"
+	"time"
 )
 
 func main() {
@@ -26,10 +27,11 @@ func main() {
 			BankCountryCode: readTx[i][2],
 		})
 	}
-
-	res, err := model.Prioritize(transactions)
+	totalTime := time.Millisecond * 1000
+	res, err := model.Prioritize(transactions, totalTime)
 	if err != nil {
 		return
 	}
-	fmt.Print(res)
+	fmt.Println(res)
+	fmt.Printf("Can process %v USD in %d msec", model.Sum(res), totalTime.Milliseconds())
 }
