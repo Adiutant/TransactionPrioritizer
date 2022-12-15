@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"strconv"
 	"testTaskSec/model"
 	"time"
 )
@@ -28,10 +29,13 @@ func main() {
 		})
 	}
 	totalTime := time.Millisecond * 1000
+	ct := time.Now().UnixMilli()
 	res, err := model.Prioritize(transactions, totalTime)
 	if err != nil {
 		return
 	}
+	t := time.Now().UnixMilli() - ct
+	fmt.Println("in " + strconv.FormatInt(t, 10))
 	fmt.Println(res)
 	fmt.Printf("Can process %v USD in %d msec", model.Sum(res), totalTime.Milliseconds())
 }

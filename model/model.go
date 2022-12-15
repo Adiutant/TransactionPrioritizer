@@ -79,16 +79,16 @@ func Prioritize(tx []Transaction, totalTime time.Duration) ([]Transaction, error
 		latencies: lat,
 	}
 	sort.Sort(transactions)
-	time := 0
+	currentTime := 0
 	resultSlice := make([]Transaction, 0)
 	for i := len(transactions.txList) - 1; i >= 0; i-- {
-		if int64(time+transactions.latencies[transactions.txList[i].BankCountryCode]) > totalTime.Milliseconds() {
+		if int64(currentTime+transactions.latencies[transactions.txList[i].BankCountryCode]) > totalTime.Milliseconds() {
 			break
 		}
-		time += transactions.latencies[transactions.txList[i].BankCountryCode]
+		currentTime += transactions.latencies[transactions.txList[i].BankCountryCode]
 		resultSlice = append(resultSlice, transactions.txList[i])
 	}
-	fmt.Println(time)
+	fmt.Println(currentTime)
 	return resultSlice, nil
 
 }
