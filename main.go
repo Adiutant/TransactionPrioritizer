@@ -4,8 +4,8 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	"strconv"
 	"testTaskSec/model"
+	"testTaskSec/utils"
 	"time"
 )
 
@@ -29,13 +29,34 @@ func main() {
 		})
 	}
 	totalTime := time.Millisecond * 1000
-	ct := time.Now().UnixMilli()
-	res, err := model.Prioritize(transactions, totalTime)
+	res, err := utils.Prioritize(transactions, totalTime)
 	if err != nil {
 		return
 	}
-	t := time.Now().UnixMilli() - ct
-	fmt.Println("in " + strconv.FormatInt(t, 10))
-	fmt.Println(res)
-	fmt.Printf("Can process %v USD in %d msec", model.Sum(res), totalTime.Milliseconds())
+	//fmt.Println(res)
+	fmt.Printf("Can process %v USD in %d msec\n", model.Sum(res), totalTime.Milliseconds())
+
+	totalTime = time.Millisecond * 50
+	res, err = utils.Prioritize(transactions, totalTime)
+	if err != nil {
+		return
+	}
+	//fmt.Println(res)
+	fmt.Printf("Can process %v USD in %d msec\n", model.Sum(res), totalTime.Milliseconds())
+
+	totalTime = time.Millisecond * 60
+	res, err = utils.Prioritize(transactions, totalTime)
+	if err != nil {
+		return
+	}
+	//fmt.Println(res)
+	fmt.Printf("Can process %v USD in %d msec\n", model.Sum(res), totalTime.Milliseconds())
+
+	totalTime = time.Millisecond * 90
+	res, err = utils.Prioritize(transactions, totalTime)
+	if err != nil {
+		return
+	}
+	//fmt.Println(res)
+	fmt.Printf("Can process %v USD in %d msec\n", model.Sum(res), totalTime.Milliseconds())
 }

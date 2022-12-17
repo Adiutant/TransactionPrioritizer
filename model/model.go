@@ -1,21 +1,12 @@
 package model
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"sort"
-	"strconv"
-	"time"
+	"github.com/shopspring/decimal"
 )
 
 type Interface interface {
-	// Len - количество элементов в коллекции.
 	Len() int
-	// Less сообщает должен ли элемента с индексом i
-	// быть отсортированным перед элементом с индексом j.
 	Less(i, j int) bool
-	// Swap меняет местами элементы с индексами i и j.
 	Swap(i, j int)
 }
 type Transaction struct {
@@ -29,23 +20,23 @@ type Transaction struct {
 	BankCountryCode string
 }
 type Transactions struct {
-	txList    []Transaction
-	latencies map[string]int
+	TxList    []Transaction
+	Latencies map[string]int
 }
 
 func (tx Transactions) Len() int {
-	return len(tx.txList)
+	return len(tx.TxList)
 }
 func (tx Transactions) Less(i, j int) bool {
-	firstAmount, err := strconv.ParseFloat(tx.txList[i].Amount, 32)
+	firstAmount, err := decimal.NewFromString(tx.TxList[i].Amount)
 	if err != nil {
 		return false
 	}
-	secondAmount, err := strconv.ParseFloat(tx.txList[j].Amount, 32)
+	secondAmount, err := decimal.NewFromString(tx.TxList[j].Amount)
 	if err != nil {
 		return false
 	}
-	return firstAmount/float64(tx.latencies[tx.txList[i].BankCountryCode]) < secondAmount/float64(tx.latencies[tx.txList[j].BankCountryCode])
+	return firstAmount.Div(decimal.NewFromInt(int64(tx.Latencies[tx.TxList[i].BankCountryCode]))).LessThan(secondAmount.Div(decimal.NewFromInt(int64(tx.Latencies[tx.TxList[j].BankCountryCode]))))
 }
 
 type FraudDetectionResult struct {
@@ -54,43 +45,18 @@ type FraudDetectionResult struct {
 }
 
 func (tx Transactions) Swap(i, j int) {
-	tx.txList[i], tx.txList[j] = tx.txList[j], tx.txList[i]
+	tx.TxList[i], tx.TxList[j] = tx.TxList[j], tx.TxList[i]
 }
 
 type FraudDetectionResults []FraudDetectionResult
 
-func Sum(array []Transaction) float64 {
-	result := float64(0)
+func Sum(array []Transaction) string {
+	result := decimal.NewFromInt(0)
 	for _, v := range array {
-		amountVal, _ := strconv.ParseFloat(v.Amount, 32)
-		result += amountVal
+		amountVal, _ := decimal.NewFromString(v.Amount)
+		result = result.Add(amountVal)
 	}
-	return result
-}
-func Prioritize(tx []Transaction, totalTime time.Duration) ([]Transaction, error) {
-	jsonBytes, err := ioutil.ReadFile("data/api_latencies.json")
-	if err != nil {
-		return nil, err
-	}
-	var lat map[string]int
-	json.Unmarshal(jsonBytes, &lat)
-	transactions := Transactions{
-		txList:    tx,
-		latencies: lat,
-	}
-	sort.Sort(transactions)
-	currentTime := 0
-	resultSlice := make([]Transaction, 0)
-	for i := len(transactions.txList) - 1; i >= 0; i-- {
-		if int64(currentTime+transactions.latencies[transactions.txList[i].BankCountryCode]) > totalTime.Milliseconds() {
-			break
-		}
-		currentTime += transactions.latencies[transactions.txList[i].BankCountryCode]
-		resultSlice = append(resultSlice, transactions.txList[i])
-	}
-	fmt.Println(currentTime)
-	return resultSlice, nil
-
+	return result.String()
 }
 
 //func processTransactions(tx []Transaction) ([]FraudDetectionResults, error) {
